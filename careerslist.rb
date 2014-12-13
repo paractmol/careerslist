@@ -7,13 +7,13 @@ module Stackoverflow
 		def initialize(attrs = {})
 			careers = "http://careers.stackoverflow.com"
 			
-			attrs.merge!({:keywords => "", :type => "", :location => ""})
+			attrs.merge!({:keywords => "", :type => "", :location => "", :range => 20, :units => "Miles"})
 
 			attrs = attrs.map do |k,v|
 				{k => v.to_s.split(', ').join('+')}
 			end.reduce({}, :merge)
 
-			uri = URI([careers, "jobs?searchTerm=#{attrs[:keywords]}&type=#{attrs[:type]}&location=#{attrs[:location]}&range=20&distanceUnits=Miles"].join('/'))
+			uri = URI([careers, "jobs?searchTerm=#{attrs[:keywords]}&type=#{attrs[:type]}&location=#{attrs[:location]}&range=#{attrs[:range]}&distanceUnits=#{attrs[:units]}"].join('/'))
 
 			c = CareersList::Crawler.new(uri)
 			companies = c.doc.css('.-item.-company-group')
@@ -41,6 +41,10 @@ module CareersList
 		attr_reader :res, :doc
 
 		def initialize(uri)
+			# When you has other than human's user-agent in 
+			# headers careers.stackoverflow.com page doesn't 
+			# let you to find needed dom elements
+			
 			req = Net::HTTP::Get.new(uri, {'User-Agent' => 'Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'})
 			@res = Net::HTTP.start(uri.hostname, uri.port) {|http|
 			  http.request(req)
