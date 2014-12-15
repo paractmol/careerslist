@@ -1,28 +1,30 @@
-Library that parses first page of result of careers.stackoverflow.com and let you classify whether
+#### Don't know if this job right for you? Ask Mr.CareersList
+
+Joke application that parses first page of result of careers.stackoverflow.com and let you classify whether
 job fits for you or not.
 
 ```
 require './careerslist'
 
-s = Stackoverflow::Careers.new({keywords: "Ruby"})
-
-2.1.2 :009 > s.jobs.list[1]
- => ["Plexisoft Inc.", "Boston, MAWork Remotely", "Job Description\r\n                    \r\n                Plexisoft Inc., a new player in the Business Management Software market, is extending the development team again!\r\nOur globally distributed team consists of 4 highly qualified developers and a variable number of temporary candidates for a development role. Our main goal includes moving to a horizontal team management model where each developer has enough skills, experience, and personal interests to work in an architect-level role. The project is currently scheduled to be in production phase within 3 months.\r\nThat's why we expect to receive CVs from candidates who have some the following skills:\r\nExperience in development of LAMP(PHP/Yii)-based complex business applications.\r\nExperience in automated QA of complex web-based software.\r\nExperience in load/stress testing and fine-tuning complex PHP-based software for large traffic.\r\nExperience in web security.\r\nExperience in integrating custom software with APIs of all currently popular 3rd party products in such fields as ecommerce, accounting, marketing etc.", "Our system currently consists of CRM, E-commerce, HelpDesk, and Analytics Modules, using the following tools and technologies:  PHP 5.3, Yii 1.1.7, MySQL, MongoDB, ORM (ActiveRecord and YiiMongoDbSuite), jQuery, jQueryUI, ExtJs charts module, WHMCS with our customizations, SVN, Ajax, HTML, CSS, Bootstrap, Apache, CentOS.", "Please, send your CV to hr@plexisoft.com\r\nWe respond to all candidates. If you have not received a response during 1-3 days, you may also try to contact us through internal messaging system on this job board.\r\nNote: No outsourcing companies please, we are only looking for direct hire individuals.", "Job Description", "Skills & Requirements", "About Plexisoft Inc."]
- 2.1.2 :010 > s.jobs.list[1].like
-  => 1
- 2.1.2 :011 > s.jobs.list[2].like
-  => 2
- 2.1.2 :012 > s.jobs.list[3].like
-  => 3
- 2.1.2 :013 > s.jobs.list[8].classify
-  => :like
- 2.1.2 :014 > s.jobs.list[8].dislike
-  => 1
- 2.1.2 :015 > s.jobs.list[11].dislike
-  => 2
- 2.1.2 :016 > s.jobs.list[12].dislike
-  => 3
- 2.1.2 :017 > s.jobs.list.map {|j| j.classify }
-  => [:dislike, :like, :like, :like, :dislike, :dislike, :dislike, :dislike, :dislike, :dislike, :like, :dislike, :dislike, :dislike, :dislike, :dislike, :dislike, :dislike, :dislike, :dislike]
-
+s = Stackoverflow::Careers.new({keywords: "Ruby, Rails, JavaScript"})
+```
+```
+2.1.2 :003 > s.jobs.list[0].values
+=> ["University of California, Berkeley", "Santa Monica, CA", "Ruby on Rails Programmer (0652U)University of California, BerkeleyAre you ready for the challenge of becoming someone who makes a difference in children’s lives? At the University of California, Berkeley Graduate School of Education, we welcome visionaries and dreamers - individuals who don’t wait for change, but make it happen! At the Berkeley Evaluation and Assessment Research (BEAR) Center, you will be part of a team that contributes to improving the education of students across California and globally. We are looking for a skilled Ruby on Rails programmer who wants to make a real and positive difference in the lives of educators and students.  At the BEAR Center, we respect work-life balance and offer a flexible schedule. In addition to a career filled with purpose and opportunity, UC Berkeley offers a comprehensive benefits package including generous vacation time, many healthcare options and pension.  For a full description of the Ruby on Rails Developer responsibilities, check out: http://apptrkr.com/553538 and enter job ID #18997.EOEjeid-50248c6b53d7eb49ac3bfcfe83535c95"]
+2.1.2 :004 > s.jobs.list[0].fit
+=> 1
+2.1.2 :005 > s.jobs.list[1].fit
+=> 2
+2.1.2 :006 > s.jobs.list[3].unfit
+=> 1
+2.1.2 :007 > s.jobs.list[4].unfit
+=> 2
+2.1.2 :009 > s.jobs.list[5].fit
+=> 3
+2.1.2 :010 > s.jobs.list.each_with_index.map {|j, i| [i, j.classify] }
+=> [[0, :fit], [1, :fit], [2, :unfit], [3, :unfit], [4, :unfit], [5, :fit], [6, :unfit], [7, :fit], [8, :unfit], [9, :unfit], [10, :fit], [11, :unfit], [12, :unfit], [13, :unfit], [14, :unfit], [15, :fit], [16, :unfit], [17, :unfit], [18, :unfit], [19, :unfit], [20, :unfit]]
+2.1.2 :011 > s.jobs.list[15]
+=> http://careers.stackoverflow.com/jobs/75905/ruby-full-stack-developer-for-funded-startup-skillable?a=pshz8MGnx8A&searchTerm=Ruby+JavaScript+Rails
+2.1.2 :012 > s.jobs.list[15].classify
+=> :fit
 ```

@@ -4,26 +4,42 @@ require 'stuff-classifier'
 
 module Stackoverflow
 	class Careers
-		def initialize(attrs = {})
+		def initialize(attributes = {})
 			careers = "http://careers.stackoverflow.com"
 			
-			attrs.merge!({:keywords => "", :type => "", :location => "", :range => 20, :units => "Miles"})
+			attrs = {}
+			attrs.merge!({:keywords => "", :location => "", :range => 20, :units => "Miles"})
+			attrs.merge! attributes
 
-			attrs = attrs.map do |k,v|
+			attrs = attrs.map do |k,v| 
 				{k => v.to_s.split(', ').join('+')}
 			end.reduce({}, :merge)
 
-			uri = URI([careers, "jobs?searchTerm=#{attrs[:keywords]}&type=#{attrs[:type]}&location=#{attrs[:location]}&range=#{attrs[:range]}&distanceUnits=#{attrs[:units]}"].join('/'))
+			type = {type: "any"}
+			type.merge!({'allowsremote' => true}) if attrs[:remote] === 'true'
+			type.merge!({'offersrelocation' => true}) if attrs[:relocation] === 'true'
+			type = type.to_a.map{|kv| kv.join("=")}.join("&")
+
+			puts attrs
+			puts type
+
+			uri = URI([careers, "jobs?searchTerm=#{attrs[:keywords]}&#{type}&location=#{attrs[:location]}&range=#{attrs[:range]}&distanceUnits=#{attrs[:units]}"].join('/'))
+
+			puts uri.inspect
 
 			c = CareersList::Crawler.new(uri)
 			companies = c.doc.css('.-item.-company-group')
 
 			jobs = companies.map do |c|
-				uri = URI([careers, c.css('.-item.-job h3 a').first['href']].join('/'))
+				uri = URI([careers, c.css('.-item.-job h3 a').first['href']].join(''))
 				cv = CareersList::Crawler.new(uri)
-				cv = cv.doc.css('.jobdetail .description, .jobdetail h2').map {|vd| vd.text.strip}
+				cv = cv.doc.css('.jobdetail .description, .jobdetail h2').map {|vd| 
+					vd.text.gsub(/\r\n/, '').strip
+				}.join(' ')
+				
+				puts c.css('.-company span').inspect				
 
-				[c.css('.-company h2'), c.css('.-company span')].map{|d| d.text.strip } + cv
+				[c.css('.-company h2')].map{|d| d.text.strip } + c.css('.-company span').map{|c| c.text } + [cv] + [uri]
 			end
 
 			@jobs = CareersList::Jobs.new(jobs)
@@ -72,19 +88,21 @@ module CareersList
 	end
 
 	class Job
-		attr_reader :parent, :values
+		attr_reader :parent, :values, :link
 
 		def initialize(values, parent)
 			@parent = parent
+			@link = values.delete(values.last)
+
 			@values = values
 		end
 
-		def like
-			train(:like)
+		def fit
+			train(:fit)
 		end
 
-		def dislike
-			train(:dislike)
+		def unfit
+			train(:unfit)
 		end
 
 		def classify
@@ -92,7 +110,7 @@ module CareersList
 		end
 
 		def inspect
-			@values
+			@link
 		end
 
 		private
